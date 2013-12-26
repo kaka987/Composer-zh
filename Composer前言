@@ -1,0 +1,27 @@
+Composer前言一
+
+/**
+ *@author YoungZhang
+ *@since  2013-12-26
+ *
+ */
+
+Composer 是PHP的类包依赖管理工具，用它可以轻松的引用第三方类包，
+类似于node的npm、ruby的bundler、CentOS中的yum等
+
+1、PHP比你想象的要好得多http://article.yeeyan.org/view/101013/320904
+
+是的，PHP的流行不是没有道理的，遂开始研究Composer，并决定在现用框架中集成Composer。
+
+2、Composer为我们解决了两个大问题：
+
+1）类库的依赖管理（尤其是N多类库的应用系统）
+2）类的自动加载机制（Symfony/Zend/Laravel等均引用了Composer的类加载器）
+
+Composer的安装
+
+curl -sS https://getcomposer.org/installer | php
+
+如果报错：
+composer: You must enable the openssl extension to download files via https
+参见 http://www.phplover.cn/post/472.html
