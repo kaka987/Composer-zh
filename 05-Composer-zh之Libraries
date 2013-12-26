@@ -1,0 +1,82 @@
+05-Composer-zh之Libraries
+
+@Author YoungZhang
+@Since  2013-12-26
+
+
+这篇主要告诉我们如何让自己的类包可以通过composer来安装。
+
+1、每一个项目都是一个类包（Package）
+
+project和libraries的区别是 project是一个没有名字的类包。
+制作类包libraries，需要添加一个名字到composer.json:
+
+{
+    "name": "acme/hello-world",
+    "require": {
+        "monolog/monolog": "1.0.*"
+    }
+}
+
+这个类包的名字是 acme/hello-world ，acme是一个vender名称。
+
+2、平台类包（Platform packages）
+
+它在composer中，叫做安装在系统中的虚拟包，包括PHP本身"php"、PHP扩展"ext-<name>"、一些系统包"lib-<name>"等。
+
+composer show --platform  用来打印可用的平台类包
+
+3、检查版本（Specifying the version）
+
+当需要严格控制类包版本时，可以通过下面自动配置。
+
+{
+    "version": "1.0.0"
+}
+
+1）tags 
+
+1.0.0
+v1.0.0
+1.10.5-RC1
+v4.4.4beta2
+v2.0.0-alpha
+v2.0.4-p1
+
+2）Branches
+
+对于每一个分支，都会创建一个类包的开发版本号。
+
+1.x
+1.0 (equals 1.0.x)
+1.1.x
+
+4、锁文件（Lock file）
+
+我们可以将composer.lock文件添加到版本控制，这样整个开发组会共享一致的依赖版本了。
+
+1）Publishing to a VCS
+
+如果我们拥有一个包含composer.json文件的版本控制代码库，那么它就是可以通过composer进行安装了。
+
+    1- 在本地创建一个代码工程 acme/blog（它需要依赖acme/hello-world）
+    2- 添加composer.json到该工程根目录下
+        {
+            "name": "acme/blog",
+            "repositories": [
+                {
+                    "type": "vcs",
+                    "url": "https://github.com/username/hello-world"
+                }
+            ],
+            "require": {
+                "acme/hello-world": "dev-master"
+            }
+        }
+
+2）Publishing to packagist
+
+packagist 是composer官方的类包仓库。（默认仓库源）https://packagist.org/
+当我们想把自己的类包开源出去，就可以直接发布到packaist上，这样大家都可以使用你的类包了。
+
+
