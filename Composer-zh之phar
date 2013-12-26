@@ -1,0 +1,50 @@
+Composer-zh之phar
+
+@author YoungZhang
+@since  2013-12-26
+
+Phar(PHP Archive), 其实就是类似java jar包的方式：参见百科
+
+个人觉得使用Phar的好处有以下几点：
+
+1、方便应用程序的版本控制和发布管理
+2、方便API统一标准和规范制定
+3、方便程序运行，尤其在CLI下，可以当做命令执行整个PHP应用程序（基于zip压缩）
+
+
+在Composer[getcomposer.org]中，就是使用Phar来发布应用程序的。
+
+具体使用参照 http://scar.simcz.tw/article/2013/01/09/php-phar-create-and-use/
+
+调用Phar包有两种方式：
+1、在PHP代码中，<?php require 'phar://poi.phar/Boot.php';?>
+2、在Phar中设置默认执行接口，setStub();
+
+<?php
+Phar::mapPhar('poi.phar');
+require 'phar://poi.phar/Boot.php';
+
+$boot = new Boot();
+$boot->run();
+?>
+
+<?php
+$stub = <<<EOF
+#!/usr/bin/env php
+<?php
+    Phar::mapPhar('poi.phar');
+    require 'phar://poi.phar/Boot.php';
+    __HALT_COMPILER();
+?>
+EOF;
+
+$phar = new Phar('pointless.phar');
+$phar->setAlias('poi.phar');
+$phar->setStub($stub); 
+$phar->buildFromDirectory(dirname(__FILE__) . '/pointless');
+$phar->compressFiles(Phar::GZ);
+$phar->stopBuffering();
+
+?>
+
+
