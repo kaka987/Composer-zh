@@ -1,10 +1,8 @@
-Composer前言一
+Composer-zh之前言
 
-/**
- *@author YoungZhang
- *@since  2013-12-26
- *
- */
+@author YoungZhang
+@since  2013-12-26
+
 
 Composer 是PHP的类包依赖管理工具，用它可以轻松的引用第三方类包，
 类似于node的npm、ruby的bundler、CentOS中的yum等
