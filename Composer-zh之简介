@@ -1,0 +1,57 @@
+Composer-zh之简介
+
+参考：
+http://getcomposer.org/doc/00-intro.md#using-the-installer
+http://www.csdn.net/article/2012-07-05/2807142
+
+Composer 是PHP的一个依赖管理工具。你可以使用它定义项目中依赖的类包，并直接安装这些类包到项目中。
+
+1、依赖管理
+
+Composer 不是一个包管理器。是的，它是用来管理类包的，但是，它是在项目前期，就安装相关需要类包到项目中（如vender目录下），
+默认情况下，它不会全局性的安装类包。所以，准确的说，它是一个依赖管理器。
+
+其实，这个想法来源于nodejs 的npm 和 ruby 的bundler。而PHP中却没有类似的工具。
+
+Composer 可以解决的问题：
+a）你有一个依赖大量类包的项目
+b）其中一些类包依赖着其他类包
+c）你可以声明你依赖的这些东西
+d）Composer 会找到你要安装的某个版本的某个类包，并安装到你的项目中。
+
+
+2、声明依赖
+
+{
+    "require": {
+        "monolog/monolog": "1.2.*"
+    }
+}
+
+3、安装 - *nix
+
+Composer的安装
+
+curl -sS https://getcomposer.org/installer | php [--install-dir=bin]
+
+如果报错：
+composer: You must enable the openssl extension to download files via https
+参见 http://www.phplover.cn/post/472.html
+
+
+windows 安装（略）
+
+4、使用Composer
+
+先配置composer.json （参见声明依赖）
+$ php composer.phar install
+
+// 安装过程Composer做了什么？ 1、下载定义的类包 2、重写 lock file 3、生成autoload file 
+
+5、自动加载
+
+当我们需要使用安装的类包时，只需要在我们的引导程序中加上下面这句话，就可以直接 new ClassName; 来使用第三方类包了。
+require 'vendor/autoload.php';
+
+
+
