@@ -1,7 +1,9 @@
-Composer-zh之phar
+02-Composer-zh之phar
 
 @author YoungZhang
 @since  2013-12-26
+
+在Composer[getcomposer.org]中，就是使用Phar来发布应用程序的。
 
 Phar(PHP Archive), 其实就是类似java jar包的方式：参见百科
 
@@ -11,8 +13,6 @@ Phar(PHP Archive), 其实就是类似java jar包的方式：参见百科
 2、方便API统一标准和规范制定
 3、方便程序运行，尤其在CLI下，可以当做命令执行整个PHP应用程序（基于zip压缩）
 
-
-在Composer[getcomposer.org]中，就是使用Phar来发布应用程序的。
 
 具体使用参照 http://scar.simcz.tw/article/2013/01/09/php-phar-create-and-use/
 
