@@ -1,0 +1,108 @@
+04-Composer-zh之基本使用
+
+@Author YoungZhang
+@Since  2013-12-26
+
+1、安装（略）
+
+2、composer.json: 项目配置
+
+composer的核心配置文件：composer.json 
+
+1）require 关键字
+
+    作为composer.json 配置文件的第一个关键字，配置你需要的类库，类名:版本号
+
+    {
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
+    }
+
+    版本号格式包括：
+        1.0.2
+        >=1.0 、>=1.0,<2.0 、 >=1.0,<1.1 | >=1.2
+        1.0.*
+        ~1.2
+
+2）~1.2 格式
+
+3、安装依赖
+
+1）composer.lock 锁文件  
+    它是用来保证依赖包的版本。composer.lock的优先级会高于composer.json。
+    如果没有composer.lock文件，那么会根据composer.json文件安装类包，并生成composer.lock文件。
+
+    使用 update 命令来升级类包版本。会根据composer.json中设定的版本来升级类包。
+    （也就是说，如果我们想升级类包，移除lock文件，重写json文件，再update）
+
+    $ php composer.phar update
+    $ php composer.phar update monolog/monolog [...] //只是升级某些类包
+
+
+4、Packagist
+
+Packagist是Composer的官方仓库。也就是说，它是Composer提供的一个开源的可供下载的第三方类仓库。
+
+5、Autoloading
+
+Composer 会生成 vendor/autoload.php 文件。我们只需要如下加载，就可以直接使用第三方类包了。
+
+require 'vendor/autoload.php';
+
+1) 自动加载composer安装的第三方类包
+
+如我们之前使用composer安装了monolog类包，可以如下直接使用monolog类包：
+
+<?php
+
+require 'vendor/autoload.php';
+$log = new Monolog\Logger('name');
+$log->pushHandler(new Monolog\Handler\StreamHandler('app.log', Monolog\Logger::WARNING));
+
+$log->addWarning('Foo');
+?>
+
+2）自动加载自己的类包
+
+在根目录下（与vender目录同级）建立文件 src/Acme/Foo.php
+<?php
+
+namespace Acme;
+
+class Foo {
+    public funciton __construct(){
+        echo __FILE__,PHP_EOL;
+    }
+}
+?>
+
+在 composer.json 中添加如下配置，并执行 composer install （这样就会重写自动加载器）
+
+{
+    "autoload": {
+        "psr-0": {"Acme\\": "src/"}
+    }
+}
+
+如此就可以直接使用自己的类包了。
+
+test.php
+<?php
+require 'vendor/autoload.php';
+new Acme\Foo; //如果输出则成功了
+?>
+
+* 第二种方式 *
+
+在test.php中直接调用（这样省去了重写自动加载器了，不用修改composer.json文件和执行composer install）
+$loader = require 'vendor/autoload.php';
+$loader->add('Acme\\','src/');
+new Acme\Foo;
+
+Note: Composer 提供了自动加载器，如果你不想使用它，你可以仅仅加载vendor/composer/autoload_namespaces.php, 
+它会返回一个命名空间对应文件路径的映射数组。
+
+
+
+
