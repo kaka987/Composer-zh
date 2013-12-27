@@ -1,0 +1,294 @@
+06-Composer-zh之CLI
+
+@Author Young Zhang
+@Since  1.0.1 2013-12-27 
+@Link   youngzhang@16nn.com
+
+http://getcomposer.org/doc/03-cli.md
+
+假如你已经安装好了Composer，那么在命令行下执行 php composer.phar 即可以看到composer命令行界面
+
+1、全局选项（Global Options）
+
+Options:
+  --help           -h Display this help message.
+  --quiet          -q Do not output any message.
+  --verbose        -v|vv|vvv Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+  --version        -V Display this application version.
+  --ansi              Force ANSI output.
+  --no-ansi           Disable ANSI output.
+  --no-interaction -n Do not ask any interactive question.
+  --profile           Display timing and memory usage information
+  --working-dir    -d If specified, use the given directory as working directory.
+
+2、程序退出代码（Process Exit Codes）
+
+0 ： OK 
+1 ： Generic/unknown error code      //生成或者不可知错误
+2 ： Dependency solving error code   //依赖相关错误
+
+3、init
+
+用来初始化配置，它是一个交互式操作的，帮助你自动生成composer.json文件的方式（composer 配置自动生成器）
+php composer.phar init
+
+    Options
+    --name: Name of the package.
+    --description: Description of the package.
+    --author: Author name of the package.
+    --homepage: Homepage of the package.
+    --require: Package to require with a version constraint. Should be in format foo/bar:1.0.0.
+    --require-dev: Development requirements, see --require.
+    --stability (-s): Value for the minimum-stability field.
+
+4、install
+
+这个命令会读取当前目录下的composer.json文件，并安装相应的类包到vendor目录下.
+如果这个目录下存在composer.lock文件，那么会替代composer.json中的类包版本，这样确保所有开发者使用相同的版本类包。
+如果不存在，那么install完成后，会自动生成这个锁文件。
+
+    Options
+
+    --prefer-source: 有两种方式下载一个类包：source 和 dist。对于稳定版本的composer默认使用dist. source 是一个版本控制仓库。如果你想修复一个bug或者获取一个本地的git依赖库克隆是很有用的。
+    --prefer-dist: 同上面作用类似，这个是从dist安装类库。它可以加快安装速度，即使你没有更新本地vendor目录。
+    --dry-run: 如果你只是想跑下安装过程，但并不想真的去安装类包，可以使用这个选项。
+    --dev: 安装require-dev字段包含的类包。
+    --no-dev: 忽略require-dev字段包含的类包。
+    --no-scripts: 不去执行在composer.json中配置的脚本文件.
+    --no-plugins: 禁掉插件。
+    --no-progress: 不显示执行过程。
+    --optimize-autoloader (-o): 将PSR-0自动加载方式导入到classmap中，以获得更快的自动加载性能。这个操作会浪费点时间，所以默认不执行。
+
+
+5、update
+
+1）这个命令可以获得依赖包的最新版本，并更新composer.lock文件 php composer.phar update
+
+2）如果你只是想更新部分依赖包，如下执行：
+$ php composer.phar update vendor/package vendor/package2
+
+3）你也可以使用通配符一次性更新一个分支的依赖包：
+$ php composer.phar update vendor/*
+
+    Options
+
+    --prefer-source: Install packages from source when available.
+    --prefer-dist: Install packages from dist when available.
+    --dry-run: Simulate the command without actually doing anything.
+    --dev: Install packages listed in require-dev (this is the default behavior).
+    --no-dev: Skip installing packages listed in require-dev.
+    --no-scripts: Skips execution of scripts defined in composer.json.
+    --no-plugins: Disables plugins.
+    --no-progress: Removes the progress display that can mess with some terminals or scripts which don't handle backspace characters.
+    --optimize-autoloader (-o): Convert PSR-0 autoloading to classmap to get a faster autoloader. This is recommended especially for production, but can take a bit of time to run so it is currently not done by default.
+    --lock: Only updates the lock file hash to suppress warning about the lock file being out of date.
+    --with-dependencies Add also all dependencies of whitelisted packages to the whitelist. So all packages with their dependencies are updated recursively.
+
+
+
+6、require
+
+这个命令是用来添加新的依赖包，并更新composer.json文件。
+
+$ php composer.phar require
+
+当你不想通过交互界面添加，可以直接如下执行。
+$ php composer.phar require vendor/package:2.* vendor/package2:dev-master
+
+    Options
+
+    --prefer-source: Install packages from source when available.
+    --prefer-dist: Install packages from dist when available.
+    --dev: Add packages to require-dev.
+    --no-update: Disables the automatic update of the dependencies.
+    --no-progress: Removes the progress display that can mess with some terminals or scripts which don't handle backspace characters.
+
+7、global
+
+这个命令允许你在设定COMPOSER_HOME目录下，全局性的执行其他命令。（将依赖包安装到全局，如果你在$PATH中配置了$COMPOSER_HOME/vendor/bin）
+
+$ php composer.phar global require fabpot/php-cs-fixer:dev-master
+
+如上，我们就可以在shell下直接执行php-cs-fixer了。
+
+$ php composer.phar global update  #全局性更新
+
+8、search
+
+主要用来在packagist上搜索 类包的
+
+$ php composer.phar search monolog
+
+    Options
+
+    --only-name (-N): Search only in name.
+
+9、show
+
+用来显示类包相关信息
+
+    Options
+
+    --installed (-i): List the packages that are installed.
+    --platform (-p): List only platform packages (php & extensions).
+    --self (-s): List the root package info.
+
+10、depends
+
+用来查询有哪些包依赖该类包（很有必要）
+
+$ php composer.phar depends --link-type=require monolog/monolog
+
+nrk/monolog-fluent
+poc/poc
+propel/propel
+symfony/monolog-bridge
+symfony/symfony
+
+    Options
+
+    --link-type: The link types to match on, can be specified multiple times.
+
+11、validate
+
+用来验证composer.json配置是否正确
+$ php composer.phar validate
+
+12、status
+
+当你经常需要修改用composer安装的类包，这个命令可以用来检查本地代码是否有被改变。
+$ php composer.phar status -v
+You have changes in the following dependencies:
+vendor/seld/jsonlint:
+    M README.mdown
+
+13、self-update
+
+用来升级composer本身。
+$ php composer.phar self-update
+$ sudo composer self-update
+
+14、config
+
+用来显示和设置composer.json和全局config.json
+
+$ php composer.phar config --list  //用来显示composer配置
+
+    Usage:
+    config [options] [setting-key] [setting-value1] ... [setting-valueN]
+
+    //setting-key 是配置项名称  setting-value 是配置项值
+
+    Options
+
+    --global (-g): Operate on the global config file located at $COMPOSER_HOME/config.json by default. Without this option, this command affects the local composer.json file or a file specified by --file.
+    --editor (-e): Open the local composer.json file using in a text editor as defined by the EDITOR env variable. With the --global option, this opens the global config file.
+    --unset: Remove the configuration element named by setting-key.
+    --list (-l): Show the list of current config variables. With the --global option this lists the global configuration only.
+    --file="..." (-f): Operate on a specific file instead of composer.json. Note that this cannot be used in conjunction with the --global option.
+
+    Modifying Repositories 用来修改config段，如修改仓库源部分的设置
+
+15、create-project
+
+用来创建项目，有点类似svn/git等创建仓库项目样。
+
+php composer.phar create-project doctrine/orm path 2.2.*
+
+也可以使用composer.json配置，直接执行composer来创建项目（默认情况下，统一从packagist.org上下载）
+
+    Options
+
+    --repository-url: Provide a custom repository to search for the package, which will be used instead of packagist. Can be either an HTTP URL pointing to a composer repository, or a path to a local packages.json file.
+    --stability (-s): Minimum stability of package. Defaults to stable.
+    --prefer-source: Install packages from source when available.
+    --prefer-dist: Install packages from dist when available.
+    --dev: Install packages listed in require-dev.
+    --no-install: Disables installation of the vendors.
+    --no-plugins: Disables plugins.
+    --no-scripts: Disables the execution of the scripts defined in the root package.
+    --no-progress: Removes the progress display that can mess with some terminals or scripts which don't handle backspace characters.
+    --keep-vcs: Skip the deletion of the VCS metadata for the created project. This is mostly useful if you run the command in non-interactive mode.
+
+
+16、dump-autoload
+
+当有新的类包时，可以用来更新autoloader，没必要再通过install或者update命令了。
+
+    Options
+
+    --optimize (-o): Convert PSR-0 autoloading to classmap to get a faster autoloader. This is recommended especially for production, but can take a bit of time to run so it is currently not done by default.    
+
+
+17、licenses
+
+列出名称、版本、许可、所有安装的包
+Lists the name, version and license of every package installed.
+
+
+18、run-script
+
+手动执行脚本
+
+19、diagnose
+
+用来检测composer的
+
+20、help 
+
+查看某个特定命令帮助的
+$ php composer.phar help install
+
+
+21、Environment variables
+
+composer.json中config部分的环境变量 
+$ composer config --list 可以显示环境变量值
+
+1）COMPOSER
+用来设定composer.json文件名的，如：
+$ COMPOSER=composer-other.json php composer.phar install
+
+2）COMPOSER_ROOT_VERSION
+用来设定 root package的版本
+
+3）COMPOSER_VENDOR_DIR
+用来设定vendor名称的
+
+4）COMPOSER_BIN_DIR
+用来设定vendor/bin
+
+5）http_proxy or HTTP_PROXY
+设定传输协议，像git或者curl工具，可以使用小写格式http_proxy
+
+6）no_proxy
+这个环境变量接收参数类型包括：域名、IP、IP段、 还有端口。你也可以忽略所有HTTP请求。
+
+7）HTTP_PROXY_REQUEST_FULLURI
+如果你使用一个协议，但是不支持request_fulluri标记，那么你应该设置该变量为false或者0。
+
+8）HTTPS_PROXY_REQUEST_FULLURI
+同上，只是针对HTTPS请求。
+
+9）COMPOSER_HOME
+用来改变composer主目录。
+/home/<user>/.composer  #*nux
+/Users/<user>/.composer #OSX 
+C:\Users\<user>\AppData\Roaming\Composer #WIN
+
+10）COMPOSER_HOME/config.json
+
+会在COMPOSER_HOME指定的目录下生产一个composer.json文件，当我们install、update时，composer会合并在项目下的composer.json文件。
+当和项目本地配置项冲突时，本地配置优先（相当于先加载全局，再本地）
+
+11）COMPOSER_CACHE_DIR
+
+设定composer缓存目录，
+
+12）COMPOSER_PROCESS_TIMEOUT
+等待命令执行完成的超时时间。
+
+13）COMPOSER_DISCARD_CHANGES
+
+14）COMPOSER_NO_INTERACTION
+
