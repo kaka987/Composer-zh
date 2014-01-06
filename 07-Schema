@@ -1,0 +1,437 @@
+07-Composer-zh之Schema
+
+@Author Young Zhang
+@Since  1.0.1 2014-01-06 
+@Link   andyzhang@16nn.com
+
+http://getcomposer.org/doc/07-Schema.md
+
+这一章主要介绍composer.json配置的
+
+1、JSON schema
+
+JSON schema 会规定一定的格式来约定composer.json配置文件的。 详见http://json-schema.org/
+validate 命令其实就是用的它JSON schema
+
+2、Root Package
+
+Root Package 是在你的项目根目录下用composer.json来配置的类包。这里的composer.json是用来定义整个项目需要的类包的。
+
+一些配置项，只可以再Root Package下面起作用的，如config配置项，它就是只在根目录下配置才是有效的。
+
+注意：一个类包是否定义为root package，是要根据上下文环境来定义的。如果你从github上复制一个monolog类包，
+只是为了修复其中一些bug，那么这个类包就是root package。
+
+3、Properties 属性
+
+1）name 名字
+    类包的名字。包括vendor、project名称，并用/分隔。如：monolog/monolog、igorw/event-source
+    对于要发布的类包，此选项是必须的。
+
+2）description 描述
+    类包的简单描述。通常占用一行。
+    对于要发布的类包，此选项是必须的。
+
+3）version 版本
+    一个类包的版本号，在很多情况下这个选项不是必须的或者干脆省略掉。
+    格式如：X.Y.Z、vX.Y.Z 可以追加后缀，如：-dev、-patch、-alpha、-beta 、 -RC
+
+    如：
+    1.0.0
+    1.0.2
+    1.1.0
+    0.2.5
+    1.0.0-dev
+    1.0.0-alpha3
+    1.0.0-beta2
+    1.0.0-RC5
+
+    在版本库中，其实是建议省略该选项的。如VCS tag name的
+
+    Packagist 就是使用的VCS，所以版本号本身就是存在的，所以为了避免人为的失误，还是建议直接使用VCS的版本号
+
+4）type 类型
+    类包的类型，默认为library
+
+    类包的类型，是用来自定义安装逻辑的。如果你的类包需要一些特殊的逻辑，你就可以定义一个自定义类型了。
+    如，symfony-bundle, a wordpress-plugin or a typo3-module等。
+    当然，这些类型只是针对于特定的项目的，我们就要提供这个自定义的类型了。
+
+    composer建议4中类型：
+    1> library。这个是默认的，它会直接复制类包到vendor中。
+    2> project。这是指定的一个项目而不是一个类包，如一个应用为Symfony standard edition，CMS系统为SilverStripe installer，或者作为分布式应用的类包等。
+    3> metapackage。用来触发一次安装程序，但是不会安装这个类型的任何东西。仅仅只是触发一次安装过程。
+    4> composer-plugin。它给其他为类型的类包，提供了一个安装器，具体参见：http://getcomposer.org/doc/articles/custom-installers.md
+
+    在安装程序中，如果存在自定的逻辑，那最好只定义一种类型，一般情况建议省略该项。
+
+5）keywords 关键词
+    它是一个类包相关的关键词数组，这个用来搜索和过滤类包的。此选项可选。如：
+    logging
+    events
+    database
+    redis
+    templating
+
+6）homepage
+    配置该项目的URL地址。可选
+
+7）time
+    版本的时间，格式必须为：YYYY-MM-DD or YYYY-MM-DD HH:MM:SS。可选
+
+8）license
+    类包的协议。可以为一个字符串或者一个数组。可选，但是建议使用该项。具体参见http://www.spdx.org/licenses/
+    推荐的license如：
+    Apache-2.0
+    BSD-2-Clause
+    BSD-3-Clause
+    BSD-4-Clause
+    GPL-2.0
+    GPL-2.0+
+    GPL-3.0
+    GPL-3.0+
+    LGPL-2.1
+    LGPL-2.1+
+    LGPL-3.0
+    LGPL-3.0+
+    MIT
+
+    对于非开源的类包，可以使用proprietary。如果遵循多个协议，那就用数组形式。
+    {
+        "license": [
+           "LGPL-2.1",
+           "GPL-3.0+"
+        ]
+    }
+
+    或者：
+    {
+        "license": "(LGPL-2.1 or GPL-3.0+)"
+    }
+
+9）authors
+    类包的作者。可选。如：
+    {
+        "authors": [
+            {
+                "name": "Nils Adermann",
+                "email": "naderman@naderman.de",
+                "homepage": "http://www.naderman.de",
+                "role": "Developer"
+            },
+            {
+                "name": "Jordi Boggiano",
+                "email": "j.boggiano@seld.be",
+                "homepage": "http://seld.be",
+                "role": "Developer"
+            }
+        ]
+    }
+
+10）support
+    一个项目更多的支持信息。可选。（同参考文献一样）包括：email、issues、forum、wiki、irc、source。
+
+    {
+        "support": {
+            "email": "support@example.org",
+            "irc": "irc://irc.freenode.org/composer"
+        }
+    }
+
+11）Package links
+    使用一个对象来映射类包名称到 version constraints。
+    {
+        "require": {
+            "monolog/monolog": "1.0.*"
+        }
+    }
+
+    require and require-dev 选项，是稳定性的标志。这些让你进一步限制或扩展包的稳定性在最小稳定性的范围内。
+    比如你想把它用到一个不稳定的依赖包时，你可以使用一个约束，或只是使用一个空的约束。
+
+    {
+        "require": {
+            "monolog/monolog": "1.0.*@beta",
+            "acme/foo": "@dev"
+        }
+    }
+
+    如果你的依赖中包含一个不稳定的类包时，但是你还想引入它，可以使用一个相对的标志。如：
+    {
+        "require": {
+            "doctrine/doctrine-fixtures-bundle": "dev-master",
+            "doctrine/data-fixtures": "@dev"
+        }
+    }
+
+    你可以使用#<ref>来添加说明
+    {
+        "require": {
+            "monolog/monolog": "dev-master#2eb0c0978d290a1c45346a1955188929cb4e5db7",
+            "acme/foo": "1.0.x-dev#abc123"
+        }
+    }
+
+    1> require
+        这里列出需要的类包，这些类包都会被安装的
+
+    2> require-dev (root-only)
+        这里列出开发需要的类包，或者执行一些测试等等。这些会在根目录下被安装。
+        install或者update命令，有--no-dev选项时的类包，是不会被安装的。
+
+    3> conflict
+        列出冲突的类包。这些将不被安装。如<1.0, >= 1.1范围里的，是不会被安装的。
+
+    4> replace
+        列出可以替换掉的类包。你可以fork一个类包，使用不同的名称和版本号，这样同样的作用，使用可替代的包。
+        这对于子类包也是很有用的，如，在Symfony中，如果你只想使用它的某个子类包，那么就可以使用这个配置了。
+        这样你可以使用self.version来限制版本。确保和主类包版本的一致性。
+
+    5> provide
+        列出这个类包可以提供的其他类包，对于通用接口是很有用的，这样任何类包就可以来实现这个接口了
+        这个就是在provide字段来提供的。
+
+        
+12）suggest
+    这个字段主要对安装包，提供一些建议性的说明。可选。
+
+    {
+        "suggest": {
+            "monolog/monolog": "Allows more advanced logging of the application flow"
+        }
+    }
+
+13）autoload
+    Autoload 映射是一个PHP的类自动加载器。
+    目前支持 PSR-0 、PSR-4、classmap generation、files include 共四种。
+    PSR-4 是被推荐的，因为它的使用方式更方便简单，使用它就不必每次引入类包后再重新生成加载器了。
+
+    1> PSR-4
+        它是用来在Package root目录下建立命名空间到路径的映射关系的。
+        当你自动加载一个类如，Foo\\Bar\\Baz,命名空间的前缀Foo\\可以是src/，这样自动加载器就会查找
+        src/Bar/Baz.php文件并加载它。对于PSR-0，是没有Foo\\这个前缀的，
+
+        使用命名应该以\\结尾，来避免冲突。Foo将会匹配在FooBar下的类，所以双斜线，就可以避免这种冲突了
+        如，Foo\\和FooBar\\是不同的。（不是很懂）
+
+        在install/update时，PSR-4中关联的项会生成vendor/composer/autoload_psr4.php文件。
+
+        {
+            "autoload": {
+                "psr-4": {
+                    "Monolog\\": "src/",
+                    "Vendor\\Namespace\\": "",
+                }
+            }
+        }
+
+        如果你想在多个目录下搜索类，可以如下配置：
+        {
+            "autoload": {
+                "psr-4": { "Monolog\\": ["src/", "lib/"] }
+            }
+        }
+
+        如果你有一个备用的目录，想在此目录下全局扫描，可以如下配置：
+        {
+            "autoload": {
+                "psr-4": { "": "src/" }
+            }
+        }
+
+    2> PSR-0
+        在PSR-0下，与PSR-4不同的是，它支持PEAR形式，如：Vendor_Lib_Class
+        这种配置，在install/update时会生成vendor/composer/autoload_namespaces.php文件
+        来保存命名空间到路径的映射关系。
+
+        {
+            "autoload": {
+                "psr-0": {
+                    "Monolog\\": "src/",
+                    "Vendor\\Namespace\\": "src/",
+                    "Vendor_Namespace_": "src/"
+                }
+            }
+        }
+
+        多个目录下，同PSR-4：
+        {
+            "autoload": {
+                "psr-0": { "Monolog\\": ["src/", "lib/"] }
+            }
+        }
+
+        PSR-0不仅仅局限于命名空间的形式，同样可以适用于右斜线形式，在全局命名空间下只有一个类文件时是非常有用的
+        如果这个文件同时在根目录下，可以按如下形式配置：
+        {
+            "autoload": {
+                "psr-0": { "UniqueGlobalClass": "" }
+            }
+        }
+
+        备用目录同PSR-4
+        {
+            "autoload": {
+                "psr-0": { "": "src/" }
+            }
+        }
+    
+    3> Classmap
+        Classmap 会在install/update时，将配置的映射关系保存到vendor/composer/autoload_classmap.php文件中。
+        这个映射表会在对应的目录下，搜索所有以.php和.inc为后缀的文件。
+        Classmap与PSR-4/0不同的是，直接指定路径或者具体类文件，没有使用命名空间而已。
+
+        {
+            "autoload": {
+                "classmap": ["src/", "lib/", "Something.php"]
+            }
+        }
+
+    4> Files
+        如果你只想require某个确定的类文件，你就可以使用此配置项。
+        而且此配置项的加载的文件，在每个请求时都是预先加载的，不管是否调用了。
+        可以用它来加载函数库。
+        {
+            "autoload": {
+                "files": ["src/MyLibrary/functions.php"]
+            }
+        }
+
+    5> include-path
+        它是用来兼容老的传统项目的，如那种每个请求都会去加载的类。
+        当然，从现在开始，我们还是建议使用composer的类管理机制吧。
+
+        这里的配置需要添加到PHP的include-path下
+        {
+            "include-path": ["lib/"]
+        }
+
+    6> target-dir
+        这个是用来兼容PSR-0项目的，建议从现在开始使用PSR-4。
+        用来解决不能通过命名空间来正确的加载类包的问题。
+
+        如Symfony.它的类包是基于组件的，如Yaml组件是在Symfony\Component\Yaml，这个Package Root
+        是Yaml目录，为了自动加载它，但是我们知道它并不在vendor/symfony/yaml下，而是在
+        vendor/symfony/yaml/Symfony/Component/Yaml下。这样PSR-0就如下配置：
+
+        {
+            "autoload": {
+                "psr-0": { "Symfony\\Component\\Yaml\\": "" }
+            },
+            "target-dir": "Symfony/Component/Yaml"
+        }
+
+
+3、minimum-stability (root-only) （不是很理解）
+    
+
+4、prefer-stable (root-only)
+    用来设置优先加载的类包，（就是说如果有稳定的包，就先加载稳定的）
+    "prefer-stable": true 
+
+5、repositories (root-only) （这个会在下一章具体说明）
+    可以配置自定义的类包。
+
+    默认composer只是使用packagist代码库。配置了此项，你就可以使用任何代码库了。
+
+    reositories 不会递归解析。你需要添加这个配置到主composer.json文件中。
+    支持的类型如下：
+    1> composer
+    2> vcs
+    3> pear
+    4> package
+
+    {
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://packages.example.com"
+        },
+        {
+            "type": "composer",
+            "url": "https://packages.example.com",
+            "options": {
+                "ssl": {
+                    "verify_peer": "true"
+                }
+            }
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Seldaek/monolog"
+        },
+        {
+            "type": "pear",
+            "url": "http://pear2.php.net"
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "smarty/smarty",
+                "version": "3.1.7",
+                "dist": {
+                    "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "type": "svn",
+                    "reference": "tags/Smarty_3_1_7/distribution/"
+                }
+            }
+        }
+    ]
+}
+
+    所有的配置，都会只加载第一次匹配到的，其中，packagist是最后才去解析的，也就是说，自定义的优先级高。
+
+6、config （root-only）
+
+    它是整个项目的配置项。
+    1)  process-timeout ：默认300
+    2)  use-include-path ：默认false
+    3)  preferred-install : 默认auto
+    4)  github-protocols : 默认["git", "https"]
+    5)  github-oauth ： {"github.com": "oauthtoken"}
+    6)  vendor-dir: 默认vendor
+    7)  bin-dir: 默认vendor/bin
+    8)  cache-dir:默认$home/cache
+    9)  cache-files-dir:
+    10) cache-repo-dir:
+    11) cache-vcs-dir:
+    12) cache-files-ttl:
+    13) cache-files-maxsize:300M
+    14) prepend-autoloader : 
+    15) autoloader-suffix : NULL
+    16) github-domains: github.com
+    17) notify-on-install : true
+    18) discard-changes: false
+
+    {
+        "config": {
+            "bin-dir": "bin"
+        }
+    }
+
+7、scripts (root-only)
+    composer允许你在安装过程中调用自己的脚本。具体参照：http://getcomposer.org/doc/articles/scripts.md
+
+8、extra
+    脚本可以使用这里任何额外的数据。这样调用它：
+    $extra = $event->getComposer()->getPackage()->getExtra();
+
+9、bin
+    就是bin-dir下的所有可执行的二进制或者命令程序。
+
+10、archive
+    一组用于创建软件包档案的选项。
+
+    exclude 用来去除某些文件和目录的：
+    {
+        "archive": {
+            "exclude": ["/foo/bar", "baz", "/*.test", "!/foo/bar/baz"]
+        }
+    }
+
+    这样它会包括：/dir/foo/bar/file, /foo/bar/baz, /file.php, /foo/my.test。
+    但是它会去除：/foo/bar/any, /foo/baz,  /my.test
