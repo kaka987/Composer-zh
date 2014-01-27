@@ -1,0 +1,438 @@
+08-Composer-zh之Repositories
+
+@Author Young Zhang
+@Since  1.0.1 2014-01-27 
+@Link   andyzhang@16nn.com
+
+https://getcomposer.org/doc/05-repositories.md
+
+这一章主要介绍类包和代码仓库相关概念，以及它们的工作原理。
+
+1、Concepts（概念）
+    在我们去看不同类型仓库前，需要先明白composer是如何建立的。
+    
+    1）Package
+        Composer是一个依赖管理器。它可以在本地安装包。一个类包其实是包含一些文件或目录的一个特殊目录。
+        这里是PHP代码，但是理论上，它可以是任何东西。它包括有一个版本，一个名字的包。并用来区分包的。
+
+        事实上，composer的内部会把每个版本看做分离的包。当你使用composer时有分支版本不匹配，那么版本对于你想改变一个包
+        就很重要了。
+
+        除了版本和名字，还有有用的元数据。这些信息大多是关于安装的信息定义，它描述了从哪里得到包内容。
+        这些包数据指向包的内容。这里有两个选项：dist和source。
+
+        Dist：这个dist是数据包的打包版本。通常一个发布的版本，通常是一个稳定版本。
+
+        Source: 这个是用来开发的。这通常将来自一个源代码库，如git。你可以得到你想要去修改的包。
+
+    2）Repository
+
+        库是一个资源包。它是一个包/版本列表。composer会查看你所有的库直到找到你的项目需要的软件包。
+        默认情况下，只有Packagist是被composer认可的。
+        当然，你可以添加更多的库到你的项目中，并在composer.json中定义。
+
+        库只是作用于根包下和定义了不被加载的类包。如果你想直到原因，请查阅 FAQ entry 。
+
+2、Types
+    1）Composer
+
+        这主要的库类型就是composer的库。它使用了一个独立的packages.json文件来定义所有包的元数据。
+
+        它也是packagist所使用的库类型。如果要引入composer库，只需要在packages.json文件前提供路径就可以，
+        如packagist，它的文件就是在/packages.json，这样库的URL可以是packagist.org.
+        如example.org/packages.json，它的库URL就是example.org
+
+        packages
+        需要做的字段：packages
+
+        {
+            "packages": {
+                "vendor/package-name": {
+                    "dev-master": { @composer.json },
+                    "1.0.x-dev": { @composer.json },
+                    "0.0.1": { @composer.json },
+                    "1.0.0": { @composer.json }
+                }
+            }
+        }
+
+        @composer.json标记，是作为composer.json最小的那个包版本:
+
+        name
+        version
+        dist or source
+
+        这里是一个小版本包的定义：
+        {
+            "name": "smarty/smarty",
+            "version": "3.1.7",
+            "dist": {
+                "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                "type": "zip"
+            }
+        }
+
+        它可能会包括这个配置中的任何其他字段。
+        
+        notify-batch
+
+        这个字段会检测一个用户安装包时每次被调用的URL。当然，这个URL可以是一个绝对路径（将使用同一域中的资源库）
+        或是完全限制的URL。
+        {
+            "notify-batch": "/downloads/"
+        }
+
+        如example.org/packages.json 包括一个包：monolog/monolog。它会给example.org/downloads/发送一个POST请求，
+        如下的配置：
+        {
+            "downloads": [
+                {"name": "monolog/monolog", "version": "1.2.1.0"},
+            ]
+        }
+
+        版本字段将包含的版本号的归一化表示。
+
+        该字段可选。
+
+        includes
+
+        对于大点的代码仓库，会将packages.json分割成多个文件。
+        include字段，允许你去引用这些附加的文件。
+
+        {
+            "includes": {
+                "packages-2011.json": {
+                    "sha1": "525a85fb37edd1ad71040d429928c2c0edec9d17"
+                },
+                "packages-2012-01.json": {
+                    "sha1": "897cde726f8a3918faf27c803b336da223d400dd"
+                },
+                "packages-2012-02.json": {
+                    "sha1": "26f911ad717da26bbcac3f8f435280d13917efa5"
+                }
+            }
+        }
+
+        SHA-1的文件的校验和可以允许你缓存，除非你修改了它。
+
+        该字段可选。
+
+        provider-includes and providers-url
+
+        对于非常大的仓库，如packagist.org用的就是提供程序的首选方式。
+        provider-includes 这个字段允许您列出一组列出了由这个仓库提供的包名的文件。
+        哈希应该在这种情况下的文件的SHA256。
+
+        providers-url描述了如何提供在服务器上的文件。它是相对版本库的根目录的绝对路径。
+        {
+            "provider-includes": {
+                "providers-a.json": {
+                    "sha256": "f5b4bc0b354108ef08614e569c1ed01a2782e67641744864a74e788982886f4c"
+                },
+                "providers-b.json": {
+                    "sha256": "b38372163fac0573053536f5b8ef11b86f804ea8b016d239e706191203f6efac"
+                }
+            },
+            "providers-url": "/p/%package%$%hash%.json"
+        }
+
+        
+        这些文件包含包名和哈希表来验证文件的完整性，例如：
+        {
+            "providers": {
+                "acme/foo": {
+                    "sha256": "38968de1305c2e17f4de33aea164515bc787c42c7e2d6e25948539a14268bb82"
+                },
+                "acme/bar": {
+                    "sha256": "4dd24c930bd6e1103251306d6336ac813b563a220d9ca14f4743c032fb047233"
+                }
+            }
+        }
+
+        上面的配置文件，定义了可以在该库中找到的acme/foo 和 acme/bar包。根据providers-url来加载这些文件，
+        用包名来替换%name%，用sha256来替换%hash%，这些文件本身只是包含上述包的定义。
+
+        这个字段是可选的。
+
+        stream options
+
+        packages.json作为PHP流被加载。你可以使用options参数，来设置更多的选项。
+        你可以设置任何有效的PHP流上下文选项。
+        更多信息查看Context options and parameters：http://php.net/manual/en/context.php.
+
+    2）VCS
+        VCS 其实就是版本控制系统。包括版本控制熊如，git/svn/hg等。
+        composer的一个仓库类型，就是从这些版本控制系统来获取安装包。
+
+        Loading a package from a VCS repository
+
+        有几个用例。最常见的是你维护的第三方库。
+        如果你为你的项目使用某些库，或者你想改变这个库，你将希望你的项目使用这个修补版本。
+        如果这个库在github上，那么你就可以简单的拉和推送你的改变到你的库中。
+        在你更新了你的composer.json文件后，你所需要做的就是添加这个分支作为仓库并更新这个版本到你的定义的分支上去。
+
+        更多关于版本命名约定参照：https://getcomposer.org/doc/02-libraries.md
+
+        例如，你在bugfix分支上修改了一个monolog的一个bug：
+        {
+            "repositories": [
+                {
+                    "type": "vcs",
+                    "url": "https://github.com/igorw/monolog"
+                }
+            ],
+            "require": {
+                "monolog/monolog": "dev-bugfix"
+            }
+        }
+
+        当你运行php composer.phar时，你就可以得到你所更新的bug版本了。
+
+        请注意，你不应该重新命名包，除非你打算长期把它作为一个分支，并完全从原来的包中移开。
+        composer会正确的选择你自定义的包，要优先于packgist。如果你想重命名一个包，你应该这样做，
+        在默认的（通常主）分支上，而不是一个特殊的分支上，因为包的名字是取自默认分支的。
+
+        如果其他依赖依靠你的分支的包，它可以内联别名，使其约束可以匹配它，否则不会。
+        欲了解更多的信息，请参阅别名相关文章https://getcomposer.org/doc/articles/aliases.md
+
+        Using private repositories
+
+        同样的解决方案，允许你运用到你私有的仓库上。
+
+        {
+            "require": {
+                "vendor/my-private-repo": "dev-master"
+            },
+            "repositories": [
+                {
+                    "type": "vcs",
+                    "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+                }
+            ]
+        }
+
+        唯一的要求是安装一个Git客户端的SSH密钥对。
+
+        Git alternatives Git替代品
+
+        git不是唯一的版本控制，下面的也会允许的：
+
+        Git: git-scm.com
+        Subversion: subversion.apache.org
+        Mercurial: mercurial.selenic.com
+
+        从这些系统中，你需要安装各自的客户得到的包。这可能是不方便。
+        基于这个原因，有对GitHub 和 BitBucket提供的API的特殊支持，这样获取包就无需安装版本控制系统。
+        在VCS资源库提供了从dists目录中以zips压缩包来获取他们。
+
+        GitHub: github.com (Git)
+        BitBucket: bitbucket.org (Git and Mercurial)
+
+        这个VCS驱动会基于URL自动检测。
+        但是，如果您需要指定一个不管什么原因，你可以使用git，svn的或HG作为存储库类型的VCS。
+
+        Subversion Options
+
+        由于Subversion没有本地的分支和标签概念。
+        Composer假设默认情况下，该代码位于$url/trunk，$url/branches和$url/tags.
+        如果您的存储库具有不同的布局，您可以更改这些值。
+
+        例如，如果你使用大写的名字，你可以这样配置存储库：
+
+        {
+            "repositories": [
+                {
+                    "type": "vcs",
+                    "url": "http://svn.example.org/projectA/",
+                    "trunk-path": "Trunk",
+                    "branches-path": "Branches",
+                    "tags-path": "Tags"
+                }
+            ]
+        }
+
+        如果你没有分支和标签目录，您可以通过分支路径或标签路径设置为false来完全禁用它们。
+
+        如果这个包是在子包中，/trunk/foo/bar/composer.json和/tags/1.0/foo/bar/composer.json
+        你可以通过设置"package-path"来指向子目录，这个例子中，应该是："package-path": "foo/bar/"。
+
+    3) PEAR
+
+        使用pear仓库通过pear渠道来安装类包也是可以的。Composer会在所有pear安装的包名加上前缀pear-[channelName],
+        来避免冲突（pear库没有既定的命名空间），即使所用的别名包也同样加了前缀pear-channelAlias。
+
+        使用pear2.php.net的例子：
+        {
+            "repositories": [
+                {
+                    "type": "pear",
+                    "url": "http://pear2.php.net"
+                }
+            ],
+            "require": {
+                "pear-pear2.php.net/PEAR2_Text_Markdown": "*",
+                "pear-pear2/PEAR2_HTTP_Request": "*"
+            }
+        }    
+
+        在这个例子中，这个短名渠道为pear2.所以PEAR2_HTTP_Request包的名字就变成了pear-pear2/PEAR2_HTTP_Request。
+
+        注意：由于pear仓库它是基于每个包单独请求的，所以会导致安装程序比较缓慢。
+
+        Custom vendor alias
+
+        可以使用一个通用的vendor别名来给pear渠道的包设置别名。
+
+        如：
+
+        假如你有一个私有的pear仓库，并希望使用composer来结合VCS中的包的依赖。
+
+        你的pear仓库包括了下面的一些类包：
+        BasePackage（基础类包）
+        IntermediatePackage, which depends on BasePackage（依赖于基础类包的中间层类包）
+        TopLevelPackage1 and TopLevelPackage2 which both depend on IntermediatePackage（最高级别的类包）
+
+        如果没有一个vendor别名，composer就会使用pear通道名称来作为包的别名：
+
+        pear-pear.foobar.repo/BasePackage
+        pear-pear.foobar.repo/IntermediatePackage
+        pear-pear.foobar.repo/TopLevelPackage1
+        pear-pear.foobar.repo/TopLevelPackage2
+
+        如果过了段时间，你想迁移你的pear仓库到composer仓库、命名方案及采用foobar的vendor命名方式。
+        那么使用pear项目包将不会看到更新的类包，因为他们有着不同的vendor名称。
+        (foobar/IntermediatePackage vs pear-pear.foobar.repo/IntermediatePackage).
+
+        在一开始，就给pear仓库指定vendor别名，就可以避免这种情况和使类包的命名更持久。
+
+        为了说明这一点，下面这几个类将会从pear仓库中获取：
+        BasePackage, TopLevelPackage1, and TopLevelPackage2
+        下面这几个类将会从composer仓库中获取：
+        IntermediatePackage
+
+        {
+            "repositories": [
+                {
+                    "type": "git",
+                    "url": "https://github.com/foobar/intermediate.git"
+                },
+                {
+                    "type": "pear",
+                    "url": "http://pear.foobar.repo",
+                    "vendor-alias": "foobar"
+                }
+            ],
+            "require": {
+                "foobar/TopLevelPackage1": "*",
+                "foobar/TopLevelPackage2": "*"
+            }
+        }
+
+    4）Package
+        如果你想使用一个项目，但是通过以上几种方式都不支持composer，
+        那么你还可以建立一个package仓库，来定义你自己的类包。
+
+        基本上，你可以定义在composer中一样的配置文件packages.json，但是只是针对于一个单独的包，
+        还有，需要最小字段名称，版本，和任何dist或source。
+
+        {
+            "repositories": [
+                {
+                    "type": "package",
+                    "package": {
+                        "name": "smarty/smarty",
+                        "version": "3.1.7",
+                        "dist": {
+                            "url": "http://www.smarty.net/files/Smarty-3.1.7.zip",
+                            "type": "zip"
+                        },
+                        "source": {
+                            "url": "http://smarty-php.googlecode.com/svn/",
+                            "type": "svn",
+                            "reference": "tags/Smarty_3_1_7/distribution/"
+                        },
+                        "autoload": {
+                            "classmap": ["libs/"]
+                        }
+                    }
+                }
+            ],
+            "require": {
+                "smarty/smarty": "3.1.*"
+            }
+        }
+
+        通常，你可以关闭其他源了，因为你并不正真需要它。
+
+        注意：该存储库类型有一些限制，并应尽可能避免：
+        composer不会更新类包，除非你改变了版本字段。
+        composer不会更新提交的参考，因此，如果你使用主的作为参考，那么你就不得不删除该包来强制更新，
+        并且将不得不面对一个不稳定的版本。
+
+Hosting your own
+
+    即使你大部分时间都会将类包放在packagist上，但是你还是需要会建立自己的仓库。
+
+    私有的公司仓库：如果你在公司使用composer，那么你更多的是希望维护一个你自己的私有仓库。
+
+    独立的生态系统：如果你有一个生态系统的项目，而且这些包不会被PHP社区重复使用，那么你想将它们从packagist中分离。
+                    就好比wordpress中的插件一样。
+
+    要托管你自己的类包，推荐使用一个本地的composer仓库类型，这样可以达到最佳的性能。
+
+    有一些工具可以帮助你建立一个composer仓库。
+
+        Packagist
+
+        使用packagist的底层应用程序是开源的。这意味着你只是需要安装它，重建品牌，和使用它。这是很方便的。
+        然而由于其规模和复杂性，对于大多数中小型公司，还是愿意跟踪一些有用的包就够了。
+
+        Packagist是一个Symfony2的应用程序。在github上是可用的。在内部它使用composer，并担任VCS库和composer之间的代理。
+        它拥有的所有VCS套件的清单，定期重新抓取它们，并将其作为一个composer存储库。
+
+        要设置自己的副本，只需要按照packgist github上的说明就可以了。
+
+        Satis
+
+        Satis是一个静态composer仓库生成器。有点象轻量级的，静态的基于文件的packagist仓库。
+
+        你需要给他定义一个composer.json文件，包括仓库，典型的VCS和包的定义。
+        它就可以获取所有需要的包，和一个packages.json文件。
+        更多信息参见https://github.com/composer/satis
+
+        
+
+        有一些情况下，当没有前面提到的任何一种资源时，甚至VCS，典型的例子是通过内置的Artifact跨组织库交换。
+        当然，大多数时候，他们都是私有的。
+        为了简化维护，可以简单地使用Artifact类型存储库来包含那些私人包的ZIP压缩文件的文件夹。
+        {
+            "repositories": [
+                {
+                    "type": "artifact",
+                    "url": "path/to/directory/with/zips/"
+                }
+            ],
+            "require": {
+                "private-vendor-one/core": "15.6.2",
+                "private-vendor-two/connectivity": "*",
+                "acme-corp/parser": "10.3.5"
+            }
+        }
+
+        每个压缩Artifact仅仅是一个ZIP压缩包同composer.json在根文件夹下：
+        $ unzip -l acme-corp-parser-10.3.5.zip
+        composer.json
+        ...
+
+        如果有两个档案的不同的软件包，它们都是被引用的，当有一个新的文档添加在了Artifact时，
+        并运行了更新时，该版本就会被导入，composer同时也被更新了。
+
+Disabling Packagist
+    当然，你可以添加一些配置来禁止默认的packagist库：
+    {
+        "repositories": [
+            {
+                "packagist": false
+            }
+        ]
+    }        
